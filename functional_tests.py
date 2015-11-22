@@ -1,6 +1,7 @@
 from selenium import webdriver 
 from selenium.webdriver.common.keys import Keys 
 import unittest
+import time 
 
 class NewVisitorTest(unittest.TestCase):
     
@@ -30,25 +31,29 @@ class NewVisitorTest(unittest.TestCase):
 
             #He enters 'Buy peacock feathers' and hits save 
             inputbox.send_keys('Buy peacock feathers')
-
-            # page is refreshed and shows the list with '1: Buy peacock feathers' 
             inputbox.send_keys(Keys.ENTER)
+            # page is refreshed and shows the list with '1: Buy peacock feathers' 
+
             
             table = self.browser.find_element_by_id('id_list_table')
             rows = table.find_elements_by_tag_name('tr')
-            self.assertTrue(
-                any(row.text == '1: Buy peacock feathers' for row in rows),
-                "New to-do element did not appear in list"
-            )
+            self.assertIn('1: Buy peacock feathers' , [row.text for row in rows])
             
 
             #again, the textbox invites to add stuff 
-            self.fail('finish the test!!')
+            inputbox = self.browser.find_element_by_id('id_new_item')
 
             #he does it again and hits save 
+            inputbox.send_keys('Use peacock feathers to make a fly')
+            inputbox.send_keys(Keys.ENTER)
 
-
-            # page refreshes, and he wants to know how to get back to the page later
+            # page refreshes, and shows both items in the list 
+            table = self.browser.find_element_by_id('id_list_table')
+            rows = table.find_elements_by_tag_name('tr')
+            self.assertIn('1: Buy peacock feathers' , [row.text for row in rows])
+            self.assertIn('2: Use peacock feathers to make a fly' , [row.text for row in rows])
+                      
+            #he wants to know how to get back to the page later
             #he sees the URL 
 
 
