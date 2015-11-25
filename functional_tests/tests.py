@@ -18,7 +18,7 @@ class NewVisitorTest(LiveServerTestCase):
         
     def test_can_start_a_list_and_retrieve_it_later(self):
 
-            #Frog visits hte website to add some items he wants to remember 
+            #Frog visits the website to add some items he wants to remember 
             self.browser.get(self.live_server_url)
 
             #He sees the website title and the header of the to do list 
@@ -33,12 +33,15 @@ class NewVisitorTest(LiveServerTestCase):
                 'Enter a to-do item'
             )
 
-            #He enters 'Buy peacock feathers' and hits save 
+            #He enters 'Buy peacock feathers' 
             inputbox.send_keys('Buy peacock feathers')
-            inputbox.send_keys(Keys.ENTER)
-            # page is refreshed and shows the list with '1: Buy peacock feathers' 
-
             
+            # when she hits enter she is taken to a new URL,
+            # and now the page lists "1: buy peacock feathers" as a to-do item
+            inputbox.send_keys(Keys.ENTER)
+            
+            frog_list_url = self.browser.current_url
+            self.assertRegex(frog_list_url, '/lists/.+')
             self.check_for_row_in_list_table('1: Buy peacock feathers')
             
 
@@ -53,13 +56,35 @@ class NewVisitorTest(LiveServerTestCase):
             self.check_for_row_in_list_table('1: Buy peacock feathers')
             self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
 
-            #he wants to know how to get back to the page later
-            #he sees the URL 
-            self.fail('Finish the test!')
+            # a new user, cat, comes along to the site
+            
+            ## we use a new browser to make sure nothing from frogs info is left  
+            self.browser.quit()
+            self.browser = webdriver.Firefox()
+            
+            #cat visits the site; there is no sign of frogs list 
+            self.browser.get(self.live_server_url)
+            
+            page_text = self.browser.find_element_by_tag_name('body').text
+            
+            self.assertNotIn('Buy peacock feathers', page_text)
+            self.assertNotIn('make a fly', page_text)
 
-
-            #he then visits that url and finds his list again 
-                        
+            #cat starts a new list by entering a new item 
+            inputbox = self.browser.find_element_by_id('id_new_item')
+            inputbox.send_keys('Buy milk')
+            inputbox.send_keys(Keys.ENTER)
+            
+            #cat gets his own unique url 
+            cat_list_url = self.browser.current_url
+            self.assertRegex(cat_list_url, '/lists/.+')
+            self.assertNotEqual(cat_list_url, frog_list_url)
+            
+            #again, there is no trace of frogs list 
+            page_text = self.browser.find_element_by_tag_name('body').text
+            self.assertNotIn('Buy peacock feathers', page_text)
+            self.assertIn('Buy milk', page_text)
+            
 
     
     
